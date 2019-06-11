@@ -1,14 +1,14 @@
 package controllers
 
 import (
-	"github.com/bwmarrin/lit"
+	"errors"
 )
 
 type ChallengeController struct{}
 
-func (*ChallengeController) ValidateID(id int) int {
+func (*ChallengeController) ValidateID(id int) (int, error) {
 	if id < 0 {
-		lit.Error("ID incorrect")
+		return -1, errors.New("ID not in valid range")
 	}
-	return id
+	return id, nil
 }

@@ -40,6 +40,17 @@ func (*ChallengeService) List() ([]*models.Challenge, error) {
 	return challenges, nil
 }
 
+func (*ChallengeService) Get(id int) (models.Challenge, error) {
+	collection := client.Database("dionysus").Collection("challenges")
+	elem := struct {
+		ID           *primitive.ObjectID `json:"ID" bson:"_id,omitempty"`
+		Challenge_ID int                 `bson:"ID,omitempty"`
+		Name         string              `bson:"Name,omitempty"`
+	}{}
+	err := collection.FindOne(context.TODO(), bson.D{{"ID", id}}).Decode(&elem)
+	return (models.Challenge{elem.Challenge_ID, elem.Name}), err
+}
+
 func (*ChallengeService) Add(challenge models.Challenge) error {
 	elem := struct {
 		ID   int    `bson:"ID"`
