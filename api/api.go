@@ -7,13 +7,20 @@ import (
 type API struct{}
 
 func (*API) Register(r chi.Router) {
-	// Challenges
-	r.Get("/challenge", ChallengeList)
-	r.Get("/challenge/{id}", ChallengeGet)
-	r.Post("/challenge", ChallengeAdd)
+	// Authentication
+	r.Post("/login", Login)
 
-	// Users
-	r.Get("/user", UserList)
-	r.Get("/user/{id}", UserGet)
-	r.Post("/user", UserAdd)
+	r.Group(func(r chi.Router) {
+		r.Use(authenticationHandler)
+
+		// Challenges
+		r.Get("/challenge", ChallengeList)
+		r.Get("/challenge/{id}", ChallengeGet)
+		r.Post("/challenge", ChallengeAdd)
+
+		// Users
+		r.Get("/user", UserList)
+		r.Get("/user/{id}", UserGet)
+		r.Post("/user", UserAdd)
+	})
 }

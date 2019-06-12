@@ -62,6 +62,14 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
 		return
 	}
+
+	user.Password, err = passwordToHash(user.Password)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		return
+	}
+
 	err = s.Add(user)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -69,5 +77,5 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(APIResponse{200, "Success"})
+	json.NewEncoder(w).Encode(APIResponse{200, "success"})
 }
