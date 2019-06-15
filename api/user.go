@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"github.com/go-chi/chi"
+	"fmt"
+	"github.com/bwmarrin/lit"
 )
 
 func UserList(w http.ResponseWriter, r *http.Request) {
@@ -78,4 +80,6 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(APIResponse{200, "success"})
+	lit.Debug("New user added: " + user.Username)
+	lit.Debug(fmt.Sprint(user))
 }

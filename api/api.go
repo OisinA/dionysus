@@ -8,19 +8,23 @@ type API struct{}
 
 func (*API) Register(r chi.Router) {
 	// Authentication
-	r.Post("/login", Login)
-
 	r.Group(func(r chi.Router) {
-		r.Use(authenticationHandler)
+		r.Post("/login", Login)
 
-		// Challenges
-		r.Get("/challenge", ChallengeList)
-		r.Get("/challenge/{id}", ChallengeGet)
-		r.Post("/challenge", ChallengeAdd)
-
-		// Users
-		r.Get("/user", UserList)
-		r.Get("/user/{id}", UserGet)
+		r.Get("/token_to_id", TokenToID)
 		r.Post("/user", UserAdd)
+
+		r.Group(func(r chi.Router) {
+			r.Use(AuthenticationHandler)
+
+			// Challenges
+			r.Get("/challenge", ChallengeList)
+			r.Get("/challenge/{id}", ChallengeGet)
+			r.Post("/challenge", ChallengeAdd)
+
+			// Users
+			r.Get("/user", UserList)
+			r.Get("/user/{id}", UserGet)
+		})
 	})
 }
