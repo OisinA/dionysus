@@ -6,3 +6,7 @@ services:
                         - "8070:8070"
         mongo:
                 image: "mongo"
+        dionysus-frontend:
+                image: dionysus-frontend
+                ports:
+                        - "80:80"
