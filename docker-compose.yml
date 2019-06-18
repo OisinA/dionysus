@@ -1,10 +1,8 @@
 version: '3'
 services:
-        web:
+        dionysus:
                 build: .
                 ports:
                         - "8070:8070"
         mongo:
                 image: "mongo"
-                ports:
-                        - "27017:27017"
