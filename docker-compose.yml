@@ -6,6 +6,8 @@ services:
                         - "8070:8070"
         mongo:
                 image: "mongo"
+                volumes:
+                        - ./db:/data/db
         dionysus-frontend:
                 image: dionysus-frontend
                 ports:
