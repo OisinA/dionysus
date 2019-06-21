@@ -10,10 +10,14 @@ import (
 
 type Service struct{}
 
+type SearchParams struct {
+	Queries map[string]interface{}
+}
+
 var client *mongo.Client
 
 func Setup() error {
-	clientOptions := options.Client().ApplyURI("mongodb://mongo:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	var err error
 	client, err = mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {

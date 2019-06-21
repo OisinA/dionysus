@@ -14,9 +14,9 @@ type UserService struct {
 	Service
 }
 
-func (*UserService) List() ([]*models.User, error) {
+func (*UserService) List(params SearchParams) ([]*models.User, error) {
 	collection := client.Database("dionysus").Collection("users")
-	cur, err := collection.Find(context.TODO(), bson.D{{}})
+	cur, err := collection.Find(context.TODO(), bson.M(params.Queries))
 	if err != nil {
 		return nil, err
 	}

@@ -13,7 +13,7 @@ import (
 
 func UserList(w http.ResponseWriter, r *http.Request) {
 	s := services.UserService{}
-	users, err := s.List()
+	users, err := s.List(getQueries(r))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
@@ -53,12 +53,6 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	s := services.UserService{}
 	var user models.User
 	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
-		return
-	}
-	
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})

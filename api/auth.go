@@ -46,14 +46,18 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode(APIResponse{403, "incorrect login"})
-		lit.Debug("Password couldn't be hashed")
+		lit.Debug("Password couldn't be found")
 		return
 	}
 
-	if auth.Password != hash_password {
+	lit.Debug(hash_password + " " + auth.Password)
+	err = bcrypt.CompareHashAndPassword([]byte(hash_password), []byte(auth.Password))
+
+	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		json.NewEncoder(w).Encode(APIResponse{403, "incorrect login"})
 		lit.Debug("Incorrect password supplied: " + auth.Password)
+		lit.Error(err.Error())
 		return
 	}
 
@@ -74,7 +78,6 @@ func TokenToID(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(APIResponse{403,"no token provided"})
 		return
 	}
-	lit.Debug(token)
 	claims := &Claims{}
 	b, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(SECRET_KEY), nil
@@ -124,7 +127,6 @@ func AuthenticationHandler(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(APIResponse{403,"no token provided"})
 			return
 		}
-		lit.Debug(token)
 		claims := &Claims{}
 		b, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 			return []byte(SECRET_KEY), nil
