@@ -146,6 +146,7 @@ func AuthenticationHandler(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(APIResponse{403, err.Error()})
 			return
 		}
+		time.Sleep(1000 * time.Millisecond)
 		next.ServeHTTP(w, r)
 	})
 }

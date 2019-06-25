@@ -3,8 +3,9 @@ package api
 import (
 	"dionysus/services"
 
-	"net/http"
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi"
 )
 
@@ -32,6 +33,7 @@ func (*API) Register(r chi.Router) {
 
 			// Teams
 			r.Get("/team", TeamList)
+			r.Get("/team/{id}", TeamGet)
 			r.Get("/team_members", TeamUserList)
 		})
 	})
@@ -41,5 +43,15 @@ func getQueries(r *http.Request) services.SearchParams {
 	r.ParseForm()
 	params := services.SearchParams{make(map[string]interface{}, 0)}
 	json.NewDecoder(r.Body).Decode(&params.Queries)
+	return params
+}
+
+func getURLParams(r *http.Request) services.SearchParams {
+	r.ParseForm()
+	m := make(map[string]interface{}, 0)
+	for i := range r.URL.Query() {
+		m[i] = r.URL.Query()[i][0]
+	}
+	params := services.SearchParams{m}
 	return params
 }

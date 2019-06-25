@@ -5,11 +5,13 @@ import (
 
 	"encoding/json"
 	"net/http"
+	"github.com/go-chi/chi"
 )
 
 func TeamList(w http.ResponseWriter, r *http.Request) {
 	s := services.TeamService{}
-	teams, err := s.List(getQueries(r))
+	params := getQueries(r)
+	teams, err := s.List(params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
@@ -25,9 +27,29 @@ func TeamList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(APIResponse{200, json.RawMessage(string(b))})
 }
 
+func TeamGet(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	s := services.TeamService{}
+	result, err := s.Get(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(APIResponse{404, "team does not exist"})
+		return
+	}
+	b, err := json.Marshal(result)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(APIResponse{200, json.RawMessage(string(b))})
+}
+
 func TeamUserList(w http.ResponseWriter, r *http.Request) {
 	s := services.TeamService{}
-	users, err := s.ListMembers(getQueries(r))
+	params := getURLParams(r)
+	users, err := s.ListMembers(params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
