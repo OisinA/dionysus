@@ -1,15 +1,16 @@
 package api
 
 import (
-	"time"
 	"encoding/json"
 	"net/http"
 	"os"
+	"time"
 
-	"golang.org/x/crypto/bcrypt"
 	"dionysus/services"
-	jwt "github.com/dgrijalva/jwt-go"
+
 	"github.com/bwmarrin/lit"
+	jwt "github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var SECRET_KEY string
@@ -75,7 +76,7 @@ func TokenToID(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Token")
 	if token == "" {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(APIResponse{403,"no token provided"})
+		json.NewEncoder(w).Encode(APIResponse{403, "no token provided"})
 		return
 	}
 	claims := &Claims{}
@@ -107,6 +108,25 @@ func TokenToID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(APIResponse{200, UserIDResponse{id}})
 }
 
+func tokenToID(token string) string {
+	claims := &Claims{}
+	b, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(SECRET_KEY), nil
+	})
+	if err != nil {
+		return ""
+	}
+	user_service := services.UserService{}
+	id, err := user_service.UsernameToID(claims.Username)
+	if err != nil {
+		return ""
+	}
+	if !b.Valid {
+		return ""
+	}
+	return id
+}
+
 func generateToken(auth Authentication) (string, error) {
 	expirationTime := time.Now().Add(60 * time.Minute)
 	claims := &Claims{
@@ -124,7 +144,7 @@ func AuthenticationHandler(next http.Handler) http.Handler {
 		token := r.Header.Get("Token")
 		if token == "" {
 			w.WriteHeader(http.StatusUnauthorized)
-			json.NewEncoder(w).Encode(APIResponse{403,"no token provided"})
+			json.NewEncoder(w).Encode(APIResponse{403, "no token provided"})
 			return
 		}
 		claims := &Claims{}
@@ -146,7 +166,6 @@ func AuthenticationHandler(next http.Handler) http.Handler {
 			json.NewEncoder(w).Encode(APIResponse{403, err.Error()})
 			return
 		}
-		time.Sleep(1000 * time.Millisecond)
 		next.ServeHTTP(w, r)
 	})
 }

@@ -19,6 +19,8 @@ func (*API) Register(r chi.Router) {
 		r.Get("/token_to_id", TokenToID)
 		r.Post("/user", UserAdd)
 
+		r.Get("/home_summary", CompetitionSummary)
+
 		r.Group(func(r chi.Router) {
 			r.Use(AuthenticationHandler)
 
@@ -35,6 +37,14 @@ func (*API) Register(r chi.Router) {
 			r.Get("/team", TeamList)
 			r.Get("/team/{id}", TeamGet)
 			r.Get("/team_members", TeamUserList)
+
+			// Problems
+			r.Get("/problem", ProblemList)
+			r.Get("/problem/{id}", ProblemGet)
+
+			// Submissions
+			r.Post("/submission/{id}", SubmissionAdd)
+			r.Get("/submission", GetScores)
 		})
 	})
 }
