@@ -16,6 +16,8 @@ func (*API) Register(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		r.Post("/login", Login)
 
+		r.Get("/settings", GetSettings)
+
 		r.Get("/token_to_id", TokenToID)
 		r.Post("/user", UserAdd)
 
@@ -44,7 +46,13 @@ func (*API) Register(r chi.Router) {
 
 			// Submissions
 			r.Post("/submission/{id}", SubmissionAdd)
-			r.Get("/submission", GetScores)
+			r.Get("/scores", GetScores)
+			r.Get("/submission", SubmissionList)
+			r.Get("/submission/{id}", SubmissionLastUpdate)
+			r.Get("/submission/{id}/score", GetSubmissionScore)
+
+			// Settings
+			r.Post("/settings", UpdateSettings)
 		})
 	})
 }

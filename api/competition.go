@@ -3,28 +3,10 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"github.com/bwmarrin/lit"
 	"io/ioutil"
+
 	"github.com/go-chi/chi"
 )
-
-var home_summary string
-
-func CompetitionSummary(w http.ResponseWriter, r *http.Request) {
-	if home_summary == "" {
-		dat, err := ioutil.ReadFile("data/home_summary.md")
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
-			return
-		}
-		home_summary = string(dat)
-		lit.Debug("Home summary read from file.")
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(APIResponse{200, home_summary})
-	return
-}
 
 func ProblemList(w http.ResponseWriter, r *http.Request) {
 	var names map[string]string = make(map[string]string, 0)
@@ -79,9 +61,28 @@ func ProblemGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	result := struct {
-		Name string    `json:"name"`
+		Name    string `json:"name"`
 		Content string `json:"content"`
 	}{name.Name, string(content)}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(APIResponse{200, result})
+}
+
+func ProblemAdd(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	problem := struct {
+		Name string `json:"name"`
+		Content string `json:"content"`
+		Answer string `json:"answer"`
+	}{}
+	err := json.NewDecoder(r.Body).Decode(&problem)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(APIResponse{200, "success"})
+	return
 }
