@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"os"
 
 	"github.com/bwmarrin/lit"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -17,7 +18,7 @@ type SearchParams struct {
 var client *mongo.Client
 
 func Setup() error {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://" + os.Getenv("DIONYSUS_DB") + ":27017")
 	var err error
 	client, err = mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {

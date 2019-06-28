@@ -54,13 +54,34 @@ func SubmissionAdd(w http.ResponseWriter, r *http.Request) {
 }
 
 func SubmissionList(w http.ResponseWriter, r *http.Request) {
+	user := tokenToID(r.Header.Get("Token"))
 	params := getQueries(r)
+	if !AdminAccess(r) {
+		if id, ok := params.Queries["User_ID"]; ok {
+			if id != user {
+				w.WriteHeader(http.StatusForbidden)
+				json.NewEncoder(w).Encode(APIResponse{403, "no permission"})
+				return
+			}
+		} else {
+			params.Queries["User_ID"] = user
+		}
+	}
 	s := services.SubmissionService{}
 	submissions, err := s.List(params)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
 		return
+	}
+	for i, _ := range submissions {
+		if submissions[i].Status == 2 {
+			s := services.ScoreService{}
+			score, err := s.GetSubmissionScore(submissions[i].Submission_ID)
+			if err == nil {
+				submissions[i].Score = score
+			}
+		}
 	}
 	b, err := json.Marshal(submissions)
 	if err != nil {
@@ -168,7 +189,7 @@ func readFile(w http.ResponseWriter, r *http.Request, filename string, filepath 
 }
 
 func scoreSubmission(submission_id string, user_id string, problem_id string, answer string) {
-	time.Sleep(5000 * time.Millisecond)
+	time.Sleep(30000 * time.Millisecond)
 	dat, err := ioutil.ReadFile("data/problems/" + problem_id + "/answer.txt")
 	s := services.SubmissionService{}
 	s.Add(submission_id, user_id, problem_id, status_scoring)

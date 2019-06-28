@@ -12,6 +12,11 @@ import (
 )
 
 func UserList(w http.ResponseWriter, r *http.Request) {
+	if !AdminAccess(r) {
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(APIResponse{403, "no permission"})
+		return
+	}
 	s := services.UserService{}
 	users, err := s.List(getQueries(r))
 	if err != nil {
@@ -31,6 +36,13 @@ func UserList(w http.ResponseWriter, r *http.Request) {
 
 func UserGet(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
+	if !AdminAccess(r) {
+		if id != tokenToID(r.Header.Get("Token")) {
+			w.WriteHeader(http.StatusForbidden)
+			json.NewEncoder(w).Encode(APIResponse{403, "no permission"})
+			return
+		}
+	}
 	s := services.UserService{}
 	result, err := s.Get(id)
 	if err != nil {
@@ -56,13 +68,25 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		lit.Error(err.Error())
 		return
 	}
+
+	role := 0
+	token := r.Header.Get("Token")
+	if token != "" {
+		if IsAdmin(token) {
+			role = user.Role
+		}
+	}
+	lit.Debug(fmt.Sprint(role))
+	user.Role = role
 
 	user.Password, err = passwordToHash(user.Password)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		lit.Error(err.Error())
 		return
 	}
 
@@ -70,6 +94,7 @@ func UserAdd(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(APIResponse{500, err.Error()})
+		lit.Error(err.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)

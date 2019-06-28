@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"errors"
 
 	"dionysus/services"
 
@@ -108,6 +109,25 @@ func TokenToID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(APIResponse{200, UserIDResponse{id}})
 }
 
+func AdminAccess(r *http.Request) bool {
+	token := r.Header.Get("Token")
+	if token != "" {
+		return IsAdmin(token)
+	} else {
+		return false
+	}
+
+	return true
+}
+
+func IsAdmin(token string) bool {
+	role, err := tokenToRole(token)
+	if err != nil {
+		return false
+	}
+	return role > 0
+}
+
 func tokenToID(token string) string {
 	claims := &Claims{}
 	b, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
@@ -180,4 +200,19 @@ func SetSecretKey() {
 	if SECRET_KEY == "" {
 		lit.Warn("You are running dionysus with no secret key.")
 	}
+}
+
+func tokenToRole(token string) (int, error) {
+	id := tokenToID(token)
+	if id == "" {
+		return -1, errors.New("Invalid token")
+	}
+
+	s := services.UserService{}
+	user, err := s.Get(id)
+	if err != nil {
+		return -1, err
+	}
+
+	return user.Role, nil
 }

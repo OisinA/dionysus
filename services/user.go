@@ -4,9 +4,7 @@ import (
 	"dionysus/models"
 
 	"context"
-	"fmt"
 
-	"github.com/bwmarrin/lit"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -28,12 +26,13 @@ func (*UserService) List(params SearchParams) ([]*models.User, error) {
 			Username string              `bson:"Username,omitempty"`
 			Password string              `bson:"Password,omitempty"`
 			Email    string              `bson:"Email,omitempty"`
+			Role     int                 `bson:"Role,omitempty"`
 		}{}
 		err := cur.Decode(&elem)
 		if err != nil {
 			return nil, err
 		}
-		users = append(users, &models.User{elem.ID.Hex(), elem.Username, "", elem.Email})
+		users = append(users, &models.User{elem.ID.Hex(), elem.Username, "", elem.Email, elem.Role})
 	}
 
 	if err := cur.Err(); err != nil {
@@ -51,22 +50,23 @@ func (*UserService) Get(id string) (models.User, error) {
 		Username string              `bson:"Username,omitempty"`
 		Password string              `bson:"Password,omitempty"`
 		Email    string              `bson:"Email,omitempty"`
+		Role     int                 `bson:"Role,omitempty"`
 	}{}
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return models.User{}, err
 	}
 	err = collection.FindOne(context.TODO(), bson.D{{"_id", objectID}}).Decode(&elem)
-	return models.User{elem.ID.Hex(), elem.Username, "", elem.Email}, err
+	return models.User{elem.ID.Hex(), elem.Username, "", elem.Email, elem.Role}, err
 }
 
 func (*UserService) Add(user models.User) error {
 	elem := struct {
-		Username string `bson:"Username,omitempty"`
-		Password string `bson:"Password,omitempty"`
-		Email    string `bson:"Email,omitempty"`
-	}{user.Username, user.Password, user.Email}
-	lit.Debug(fmt.Sprint(elem))
+		Username string `bson:"Username"`
+		Password string `bson:"Password"`
+		Email    string `bson:"Email"`
+		Role     int    `bson:"Role"`
+	}{user.Username, user.Password, user.Email, user.Role}
 	_, err := client.Database("dionysus").Collection("users").InsertOne(context.TODO(), elem)
 	return err
 }
@@ -78,6 +78,7 @@ func (*UserService) UsernameToID(username string) (string, error) {
 		Username string              `bson:"Username,omitempty"`
 		Password string              `bson:"Password,omitempty"`
 		Email    string              `bson:"Email,omitempty"`
+		Role     int                 `bson:"Role,omitempty"`
 	}{}
 	err := collection.FindOne(context.TODO(), bson.D{{"Username", username}}).Decode(&elem)
 	if err != nil {

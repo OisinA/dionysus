@@ -44,7 +44,7 @@ func (*SubmissionService) List(params SearchParams) ([]*models.Submission, error
 		if err != nil {
 			return nil, err
 		}
-		submissions = append(submissions, &models.Submission{elem.Submission_ID, elem.User_ID, elem.Problem_ID, elem.Status, elem.Updated.Format("Mon Jan _2 15:04:05 2006")})
+		submissions = append(submissions, &models.Submission{elem.Submission_ID, elem.User_ID, elem.Problem_ID, elem.Status, 0, elem.Updated.Format("Mon Jan _2 15:04:05 2006")})
 	}
 
 	if err := cur.Err(); err != nil {

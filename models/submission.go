@@ -5,5 +5,6 @@ type Submission struct {
 	User_ID       string    `json:"user"`
 	Problem_ID    string    `json:"problem"`
 	Status        int       `json:"status"`
+	Score         int       `json:"score"`
 	Updated       string    `json:"updated"`
 }

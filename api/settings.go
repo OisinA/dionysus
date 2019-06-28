@@ -71,6 +71,11 @@ func CompetitionSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateSettings(w http.ResponseWriter, r *http.Request) {
+	if !AdminAccess(r) {
+		w.WriteHeader(http.StatusForbidden)
+		json.NewEncoder(w).Encode(APIResponse{403, "no permission"})
+		return
+	}
 	r.ParseForm()
 	s := Settings{}
 	err := json.NewDecoder(r.Body).Decode(&s)

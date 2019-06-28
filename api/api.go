@@ -2,6 +2,7 @@ package api
 
 import (
 	"dionysus/services"
+	"dionysus/models"
 
 	"encoding/json"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 type API struct{}
 
 func (*API) Register(r chi.Router) {
+	makeAdminUser()
 	// Authentication
 	r.Group(func(r chi.Router) {
 		r.Post("/login", Login)
@@ -43,6 +45,8 @@ func (*API) Register(r chi.Router) {
 			// Problems
 			r.Get("/problem", ProblemList)
 			r.Get("/problem/{id}", ProblemGet)
+			r.Post("/problem", ProblemAdd)
+			r.Delete("/problem/{id}", ProblemRemove)
 
 			// Submissions
 			r.Post("/submission/{id}", SubmissionAdd)
@@ -72,4 +76,13 @@ func getURLParams(r *http.Request) services.SearchParams {
 	}
 	params := services.SearchParams{m}
 	return params
+}
+
+func makeAdminUser() {
+	s := services.UserService{}
+	users, err := s.List(services.SearchParams{})
+	pass, err := passwordToHash("admin")
+	if err != nil || len(users) == 0 {
+		s.Add(models.User{Username:"admin", Email:"", Password:pass, Role:2})
+	}
 }
